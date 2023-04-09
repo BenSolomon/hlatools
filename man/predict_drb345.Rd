@@ -20,7 +20,7 @@ A data frame with columns: \cr
 Predict DRB345 copy numbers
 }
 \examples{
-# data(drb345_data)
-# predict_drb345(drb345_data)
+#data(drb345_data)
+#predict_drb345(drb345_data)
 
 }

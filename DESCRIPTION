@@ -17,6 +17,11 @@ Imports:
     dplyr,
     kknn,
     magrittr,
+    parsnip (>= 1.0.4.9006),
     purrr,
+    rpart,
     stats,
+    tibble,
     tidyr
+Remotes:  
+    https://github.com/tidymodels/parsnip

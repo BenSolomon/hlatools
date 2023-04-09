@@ -21,7 +21,7 @@ make_drb345_ratios <- function(drb){
 
   # Calculate ratios
   drb %>%
-    dplyr::mutate_at(dplyr::vars(DRB3:DRB5), dplyr::funs(./DRB1)) %>%
+    dplyr::mutate_at(dplyr::vars(DRB3:DRB5), ~ ./DRB1) %>%
     dplyr::select(-DRB1)
 }
 
@@ -37,12 +37,11 @@ make_drb345_ratios <- function(drb){
 #' "sample" - unique sample name \cr
 #' "DRB3", "DRB4", "DRB5" - copy number of each loci represented as value of 0,1,2
 #'
-#' @import kknn
 #' @export
 #'
 #' @examples
-#' # data(drb345_data)
-#' # predict_drb345(drb345_data)
+#' #data(drb345_data)
+#' #predict_drb345(drb345_data)
 #'
 predict_drb345 <- function(drb) {
   # Assertions for drb are contained in make_drb345_ratios
@@ -53,10 +52,11 @@ predict_drb345 <- function(drb) {
   # drb345_knn model is available from sysdata.rda
 
   # Format drb and apply kNN
-  drb <- tidyr::expand_grid(drb, locus = c("DRB3", "DRB4", "DRB5"))
+  drb <- tidyr::expand_grid(drb, locus = c("DRB3", "DRB4", "DRB5")) %>%
+    dplyr::mutate(locus = factor(locus))
 
   drb %>%
-    dplyr::bind_cols(stats::predict(drb345_knn, new_data = drb)) %>%
+    dplyr::bind_cols(parsnip::predict.model_fit(drb345_knn, new_data = drb)) %>%
     dplyr::mutate("copy_number" = as.numeric(as.character(.pred_class))) %>%
     dplyr::select(sample, locus, copy_number) %>%
     tidyr::pivot_wider(names_from = "locus", values_from = "copy_number")
