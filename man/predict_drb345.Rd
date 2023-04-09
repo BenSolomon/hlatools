@@ -4,10 +4,10 @@
 \alias{predict_drb345}
 \title{Predict DRB345 copy numbers}
 \usage{
-predict_drb345(df)
+predict_drb345(drb)
 }
 \arguments{
-\item{df}{A data frame with columns: \cr
+\item{drb}{A data frame with columns: \cr
 "sample" - unique sample name \cr
 "DRB1", "DRB3", "DRB4", "DRB5" - raw read counts for each loci}
 }

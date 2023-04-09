@@ -4,10 +4,10 @@
 \alias{make_drb345_ratios}
 \title{Create DRB345 read ratios}
 \usage{
-make_drb345_ratios(df)
+make_drb345_ratios(drb)
 }
 \arguments{
-\item{df}{A data frame with columns: \cr
+\item{drb}{A data frame with columns: \cr
 "sample" - unique sample name \cr
 "DRB1", "DRB3", "DRB4", "DRB5" - raw read counts for each loci}
 }
