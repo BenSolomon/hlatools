@@ -15,7 +15,7 @@ Depends:
 Imports: 
     checkmate,
     dplyr,
-    kknn,
+    kknn (>= 1.3.2.1),
     magrittr,
     parsnip (>= 1.0.4.9006),
     purrr,
@@ -24,4 +24,5 @@ Imports:
     tibble,
     tidyr
 Remotes:  
-    https://github.com/tidymodels/parsnip
+    https://github.com/tidymodels/parsnip,
+    https://github.com/KlausVigo/kknn#24

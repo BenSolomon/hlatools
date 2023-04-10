@@ -25,8 +25,6 @@ make_drb345_ratios <- function(drb){
     dplyr::select(-DRB1)
 }
 
-
-
 #' Predict DRB345 copy numbers
 #'
 #' @param drb A data frame with columns: \cr
@@ -37,11 +35,13 @@ make_drb345_ratios <- function(drb){
 #' "sample" - unique sample name \cr
 #' "DRB3", "DRB4", "DRB5" - copy number of each loci represented as value of 0,1,2
 #'
+#' @import kknn
+#'
 #' @export
 #'
 #' @examples
-#' #data(drb345_data)
-#' #predict_drb345(drb345_data)
+#' data(drb345_data)
+#' predict_drb345(drb345_data)
 #'
 predict_drb345 <- function(drb) {
   # Assertions for drb are contained in make_drb345_ratios
@@ -55,9 +55,17 @@ predict_drb345 <- function(drb) {
   drb <- tidyr::expand_grid(drb, locus = c("DRB3", "DRB4", "DRB5")) %>%
     dplyr::mutate(locus = factor(locus))
 
+  # Critical that kknn sourced from github pull #24
+  # This updates the contrasts function
+  # Within kknn::kknn,
+  #   originally, c(unordered = "contr.dummy", ordered = "contr.ordinal")
+  #   from pull, contrasts=c(unordered = kknn::contr.dummy, ordered = kknn::contr.ordinal)
+
+  knn_prediction <- suppressWarnings(stats::predict(drb345_knn$fit, drb))
+
   drb %>%
-    dplyr::bind_cols(parsnip::predict.model_fit(drb345_knn, new_data = drb)) %>%
-    dplyr::mutate("copy_number" = as.numeric(as.character(.pred_class))) %>%
+    dplyr::mutate("copy_number" = as.numeric(as.character(knn_prediction))) %>%
     dplyr::select(sample, locus, copy_number) %>%
     tidyr::pivot_wider(names_from = "locus", values_from = "copy_number")
+
 }

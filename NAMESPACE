@@ -3,4 +3,5 @@
 export("%>%")
 export(predict_composite)
 export(predict_drb345)
+import(kknn)
 importFrom(magrittr,"%>%")
