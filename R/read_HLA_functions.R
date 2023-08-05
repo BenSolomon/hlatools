@@ -158,7 +158,7 @@ read_HLAminer <- function(dir){
   tibble::tibble(file = files) %>%
     dplyr::mutate(data = purrr::map(file, function(f){
       sample_path <- sprintf("%s/%s", dir, f)
-      hlatools::read_HLAminer_single_sample(sample_path)
+      read_HLAminer_single_sample(sample_path)
     })) %>%
     tidyr::unnest(data) %>%
     dplyr::mutate(file = gsub("(HLAminer_HPRA_|\\.csv)", "", file)) %>%
