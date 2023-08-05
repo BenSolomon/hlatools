@@ -111,3 +111,46 @@ predict_drb345 <- function(drb) {
     tidyr::pivot_wider(names_from = "locus", values_from = "copy_number")
 
 }
+
+
+#' Full pipeline to filter HLA genotypes based on DRB345 kNN
+#'
+#' @param arcasHLA_alleles Data frame of arcasHLA genotypes as read by read_arcasHLA
+#' @param arcasHLA_reads Data frame of arcasHLA read mapping statistics as read by read_arcasHLA_reads
+#'
+#' @return A dataframe identical to that provided to arcasHLA_alleles with exception 
+#' of DRB345 loci, which are filtered based on copy numbers predicted by predict_drb345
+#' @export
+#'
+#' @examples
+#' # No example
+drb345_pipeline <- function(arcasHLA_alleles, arcasHLA_reads){
+  drb345_input <- arcasHLA_reads %>% 
+    dplyr::select(sample, locus, reads) %>% 
+    dplyr::filter(grepl("DRB[1-5]",locus)) %>% 
+    tidyr::pivot_wider(names_from = "locus", values_from = "reads", values_fill = 0)
+  
+  drb_prediction <- predict_drb345(drb345_input) %>% 
+    tidyr::pivot_longer(-sample, names_to = "locus", values_to = "copy_number")
+  
+  # return(drb_prediction)
+  non_drb_alleles <- arcasHLA_alleles %>% dplyr::filter(!grepl("DRB[3-5]", locus))
+  drb_alleles <- arcasHLA_alleles %>% dplyr::filter(grepl("DRB[3-5]", locus))
+  
+  drb_alleles %>% 
+    dplyr::left_join(drb_prediction, by = c("sample", "locus")) %>%
+    dplyr::filter(allele_id <= copy_number) %>%
+    dplyr::select(-copy_number) %>%
+    dplyr::bind_rows(non_drb_alleles) %>%
+    dplyr::arrange(sample, locus, allele_id) %>%
+    dplyr::filter(grepl("^[A-D]", locus))
+}
+
+# arcasHLA_dir <- "/labs/khatrilab/solomonb/covid/pmid30518681/bulkRNA/arcasHLA"
+# 
+# drb345_pipeline(
+#   arcasHLA_alleles = read_arcasHLA(arcasHLA_dir), 
+#   arcasHLA_reads = read_arcasHLA_reads(arcasHLA_dir)
+# )
+
+

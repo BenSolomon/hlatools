@@ -19,11 +19,14 @@ read_arcasHLA <- function(dir){
     if (dir.exists(dir) & !file.exists(path)) {arg_col$push(run_arcas_message)}
     if (arg_col$isEmpty()==F) {purrr::map(arg_col$getMessages(),print);checkmate::reportAssertions(arg_col)}
 
-    readr::read_tsv(path) %>%
+    suppressMessages(readr::read_tsv(path)) %>%
       tidyr::pivot_longer(-subject, names_to = "allele_id", values_to = "allele") %>%
+      tidyr::drop_na() %>%
       dplyr::mutate(allele_id = stringr::str_sub(allele_id, -1),
                     genotyper = "arcasHLA") %>%
-      dplyr::rename(sample = subject)
+      dplyr::rename(sample = subject) %>%
+      tidyr::separate(allele, into = c("locus"), sep = "\\*", remove = F, extra = "drop") %>%
+      dplyr::select(sample, locus, allele_id, allele, genotyper)
 }
 # read_arcasHLA("/labs/khatrilab/solomonb/covid/isb/arcasHLA")
 
@@ -57,7 +60,9 @@ read_OptiType <- function(dir){
     })) %>%
     tidyr::unnest(data) %>%
     dplyr::mutate(file = gsub("_result\\.tsv", "", file)) %>%
-    dplyr::rename(sample = file)
+    dplyr::rename(sample = file) %>%
+    tidyr::separate(allele, into = c("locus"), sep = "\\*", remove = F, extra = "drop") %>%
+    dplyr::select(sample, locus, allele_id, allele, genotyper)
 }
 # read_OptiType("/labs/khatrilab/solomonb/covid/isb/optitype")
 
@@ -91,7 +96,9 @@ read_PHLAT <- function(dir){
     })) %>%
     tidyr::unnest(data) %>%
     dplyr::mutate(file = gsub("_HLA\\.sum", "", file)) %>%
-    dplyr::rename(sample = file)
+    dplyr::rename(sample = file) %>%
+    tidyr::separate(allele, into = c("locus"), sep = "\\*", remove = F, extra = "drop") %>%
+    dplyr::select(sample, locus, allele_id, allele, genotyper)
 }
 # read_PHLAT("/labs/khatrilab/solomonb/covid/isb/phlat")
 
@@ -162,7 +169,9 @@ read_HLAminer <- function(dir){
     })) %>%
     tidyr::unnest(data) %>%
     dplyr::mutate(file = gsub("(HLAminer_HPRA_|\\.csv)", "", file)) %>%
-    dplyr::rename(sample = file)
+    dplyr::rename(sample = file) %>%
+    tidyr::separate(allele, into = c("locus"), sep = "\\*", remove = F, extra = "drop") %>%
+    dplyr::select(sample, locus, allele_id, allele, genotyper)
 }
 # read_HLAminer("/labs/khatrilab/solomonb/covid/isb/hla_miner")
 
