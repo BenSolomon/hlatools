@@ -1,3 +1,45 @@
+#' Read HLA locus alignment statistics from arcasHLA
+#'
+#' @param dir Path to arcasHLA output directory
+#'
+#' @return data frame
+#' @export
+#'
+#' @examples
+#' # No example
+read_arcasHLA_reads <- function(dir){
+  arg_col <- checkmate::makeAssertCollection()
+  checkmate::assertDirectoryExists(dir)
+
+  files <- list.files(dir, pattern = ".genotype.log")
+  if (dir.exists(dir) & length(files)==0) {arg_col$push("No arcasHLA genotype.log files detected")}
+  if (arg_col$isEmpty()==F) {purrr::map(arg_col$getMessages(),print);checkmate::reportAssertions(arg_col)}
+
+  tibble::tibble(file = files) %>%
+    dplyr::mutate(data = purrr::map(file, function(f){
+      sample_path <- sprintf("%s/%s", dir, f)
+      df <- suppressMessages(data.table::fread(sample_path, sep = "?", col.names = "lines"))
+      if (any(grepl("error", df$lines, ignore.case = T))){ return(NA) }
+      else {
+        df <- df %>%
+          dplyr::mutate(lines = gsub("\t", "", lines)) %>%
+          dplyr::filter(grepl("^HLA", lines)) %>%
+          tidyr::separate(lines, into = c("locus", "abundance", "reads", "classes"), sep = " +")
+        return(df)
+      }
+      return(sample_path)
+    })) %>%
+    tidyr::unnest(data) %>%
+    dplyr::select(!(dplyr::contains("data"))) %>%
+    tidyr::separate(locus, into = c(NA, "locus"), sep = "-") %>%
+    dplyr::mutate_at(c("reads", "classes"), as.numeric) %>%
+    dplyr::mutate(file = gsub("\\.genotype\\.log", "", file)) %>%
+    dplyr::rename(sample = file)
+}
+
+# read_arcasHLA_reads("/labs/khatrilab/solomonb/covid/isb/arcasHLA")
+# "/labs/khatrilab/solomonb/covid/isb/arcasHLA/INCOV001-CV.genotype.log"
+
 #' Create DRB345 read ratios
 #'
 #' @param drb A data frame with columns: \cr
